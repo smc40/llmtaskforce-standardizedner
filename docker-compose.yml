@@ -1,0 +1,18 @@
+version: '3.7'
+services:
+  app:
+    image: bouldermaettel/standardizedner-app:0.0.1
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DICTIONARY_MATCH_URL=${BACKEND_URL:-https://jsonplaceholder.typicode.com/posts}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+    volumes:
+      - ./app/app.py:/app/app.py
+  # dict-match:
+  #   image: bouldermaettel/standardizedner-dictionary-match:0.0.1
+  #   restart: always
