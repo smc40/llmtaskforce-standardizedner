@@ -1,0 +1,11 @@
+data/tricia*json
+data/models
+data/tricia_data
+data/results/*csv
+data/results/*groundtruth.json
+data/results/input*.json
+**/*performance_VAL*.tsv
+
+__pycache__/
+*.pyc
+.venv
