@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Fetch environment variables
 dictionary_match_url = os.getenv('DICTIONARY_MATCH_URL')
+dictionary_match_url_fetch = os.getenv('DICTIONARY_MATCH_URL_FETCH')
 azure_openai_api_key = os.getenv('AZURE_OPENAI_API_KEY')
 azure_openai_endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
 
@@ -21,7 +22,8 @@ logger.info(f'AZURE_OPENAI_API_KEY: {azure_openai_api_key}')
 logger.info(f'AZURE_OPENAI_ENDPOINT: {azure_openai_endpoint}')
 
 app_ui = ui.page_fluid(
-    ui.input_text("api_url", "Enter API URL", value=dictionary_match_url),
+    ui.input_text("api_url", "Enter API URL", value=dictionary_match_url), 
+    ui.input_text("fetch_url", "Enter Fetch URL", value=dictionary_match_url_fetch), 
     ui.input_action_button("fetch", "Fetch Data"),
     ui.input_text("data_title", "Enter Title"),
     ui.input_text("data_body", "Enter Body"),
@@ -30,25 +32,29 @@ app_ui = ui.page_fluid(
 )
 
 def server(input, output, session):
+    fetch_state = {'count': 0}
+    send_state = {'count': 0}
+    
     @output
     @render.text
     def response():
-        if input.fetch() > 0:
-            api_url = input.api_url()
+        if input.fetch() > fetch_state['count']:
+            fetch_state['count'] = input.fetch()
+            api_url = input.fetch_url()
             logger.info(f'Fetch button clicked. API URL: {api_url}')
             try:
                 res = requests.get(api_url)
                 res.raise_for_status()
                 data = res.json()
                 logger.info(f'Data fetched successfully: {data}')
-                # If you need to convert to a DataFrame
                 df = pd.DataFrame(data)
                 return df.to_string()
             except requests.exceptions.RequestException as e:
                 logger.error(f'Error fetching data: {e}')
                 return str(e)
         
-        if input.send() > 0:
+        if input.send() > send_state['count']:
+            send_state['count'] = input.send()
             api_url = input.api_url()
             data = {
                 "title": input.data_title(),

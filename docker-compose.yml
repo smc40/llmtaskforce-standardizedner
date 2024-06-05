@@ -8,11 +8,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DICTIONARY_MATCH_URL=${BACKEND_URL:-https://jsonplaceholder.typicode.com/posts}
+      - DICTIONARY_MATCH_URL=${DICTIONARY_MATCH_URL:-https://jsonplaceholder.typicode.com/posts}
+      - DICTIONARY_MATCH_URL_FETCH=${DICTIONARY_MATCH_URL_FETCH:-http://dict-match:8002/data}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
     volumes:
       - ./app/app.py:/app/app.py
-  # dict-match:
-  #   image: bouldermaettel/standardizedner-dictionary-match:0.0.1
-  #   restart: always
+  dict-match:
+    image: bouldermaettel/standardizedner-app2:0.0.1
+    ports:
+      - "8002:8002"
+    
+    restart: always
