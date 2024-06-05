@@ -1,0 +1,18 @@
+version: '3.7'
+services:
+  app:
+    image: bouldermaettel/standardizedner-app:0.0.1
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DICTIONARY_MATCH_URL=${BACKEND_URL:-http://app:8000}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+    volumes:
+      # - ./llmtaskforce-standardizedner:/app/llmtaskforce-standardizedner
+  dict-match:
+    image: bouldermaettel/standardizedner-dictionary-match:0.0.1
+    restart: always

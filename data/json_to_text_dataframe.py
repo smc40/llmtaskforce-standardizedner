@@ -32,4 +32,6 @@ data = load_json(file_path)
 text_entities = extract_text_and_signals(data)
 
 # Create DataFrame
-df = pd.DataFrame(text_entities)
+df = pd.DataFrame(text_entities).rename(columns={'signal': 'AE'}, inplace=True)
+
+df.to_csv('groundtruth_extracted.csv', index=False)
