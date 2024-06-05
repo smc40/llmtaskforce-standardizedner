@@ -27,6 +27,7 @@ app_ui = ui.page_fluid(
                        ui.input_text_area('textinput', 'Description to analyse', rows=4),
                        ui.input_action_button(id="predict_term", label="Predict", class_='btn-success'),
                        "\n",
+                       ui.input_dark_mode(), 
                        width=3
                    ),
 
