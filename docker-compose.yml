@@ -8,11 +8,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DICTIONARY_MATCH_URL=${BACKEND_URL:-http://app:8000}
+      - DICTIONARY_MATCH_URL=${BACKEND_URL:-https://jsonplaceholder.typicode.com/posts}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
     volumes:
-      # - ./llmtaskforce-standardizedner:/app/llmtaskforce-standardizedner
-  dict-match:
-    image: bouldermaettel/standardizedner-dictionary-match:0.0.1
-    restart: always
+      - ./app/app.py:/app/app.py
+  # dict-match:
+  #   image: bouldermaettel/standardizedner-dictionary-match:0.0.1
+  #   restart: always
