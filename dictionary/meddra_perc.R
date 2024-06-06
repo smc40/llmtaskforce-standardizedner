@@ -4,6 +4,7 @@ library(jsonlite)
 library(purrr)
 library(elastic)
 library(readr)
+library(stringr)
 
 # Prepare percolate queries for each LLT and prep bulk file for loading
 # Adjust index name as required
@@ -64,5 +65,6 @@ gt <- ground_truth_perc %>%
            map_depth(2, "filter") %>%
            map_depth(2, "match_phrase") %>%
            map_depth(2, "text_input") %>%
-           map_chr(str_flatten, collapse = ", ")) %>%
+           map_chr(str_flatten, collapse = ", "),
+         elastic_perc_time_ms = map_chr(perc_resp, "took") ) %>%
   select(-perc_resp, -body)
