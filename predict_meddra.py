@@ -18,24 +18,24 @@ from load_meddra import load_embeddings
 ################
 model_name = 'FremyCompany/BioLORD-2023-C'
 model_path = 'data/FremyCompany-BioLORD-2023-C'
-model = SentenceTransformer(model_path, device='cpu')
-# model = SentenceTransformer(model_name, device='cpu')
+# model = SentenceTransformer(model_path, device='cpu')
+model = SentenceTransformer(model_name, device='cpu')
 
 
 # load embeddings and meddra dict from .pkl/.json file
-meddra_embeddings = load_embeddings(model_name, level='Synonym')
+meddra_embeddings = load_embeddings(model_name, level='LLT')
 
 # load meddra 
 meddra_df = pd.read_csv('data/meddra26.1-import.csv', sep=';')
 
 
 # meddra dict incl synonyms (optional) 
-with open('data/meddra_dict.json', 'r') as f:
-    meddra_dict = json.load(f)
+# with open('data/meddra_dict.json', 'r') as f:
+#     meddra_dict = json.load(f)
 
 
 
-def get_sim(text, n_terms=10, meddra_level='PT', output_mode='df'):
+def get_sim(text, n_terms=10, meddra_level='PT'):
     """
     Get semantic similarity score at LLT level;
     Predict and return top n matches at requested MedDRA level
@@ -54,15 +54,11 @@ def get_sim(text, n_terms=10, meddra_level='PT', output_mode='df'):
     sim = util.cos_sim(embed, np.array(meddra_embeddings))[0].tolist()
 
  
-    outdf = pd.DataFrame(list(zip(meddra_df['Synonym'], meddra_df[meddra_level], sim)),
-                         columns=['Synonym', meddra_level, 'score']).sort_values(by='score', ascending=False)
+    outdf = pd.DataFrame(list(zip(meddra_df['LLT'], meddra_df[meddra_level], sim)),
+                         columns=['LLT', meddra_level, 'score']).sort_values(by='score', ascending=False)
 
     outdf.drop_duplicates(subset=meddra_level, keep='first', inplace=True)
     outdf = outdf[[meddra_level, 'score']][:n_terms]
 
-    if output_mode == 'df':
-        outdf['score'] = round(outdf['score'], 3)
-        return outdf
-
-    else:
-        raise TypeError('Invalid output mode specified!')
+    outdf['score'] = round(outdf['score'], 3)
+    return outdf

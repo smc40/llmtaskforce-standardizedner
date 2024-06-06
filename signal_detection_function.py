@@ -6,6 +6,7 @@ import os
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 import pandas as pd
+import ast
 
 #Selected prompt
 selected_prompt = '''
@@ -43,7 +44,8 @@ def detect_signals(user_input: str, model = "gpt-4") -> list:
         {"role": "user", "content": f"{selected_prompt}" + user_input}
       ]
     )
-    return response.choices[0].message.content
+    return ast.literal_eval(response.choices[0].message.content)
 
 #Test
-# detect_signals("I had a headache and a fever after taking the medicine")
+# signals = detect_signals("I had a headache and a fever after taking the medicine")
+

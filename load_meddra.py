@@ -15,22 +15,14 @@ def load_embeddings(model_name, level):
     return meddra_embeddings (list): list of numpy arrays.
     """
 
-
-    with open(f'data/embed/{level.upper()}_embeddings_' + model_name.replace('/', '-') + '.pkl', 'rb') as pkl:
+    with open(f'data/{level.upper()}_embeddings_' + model_name.replace('/', '-') + '.pkl', 'rb') as pkl:
         meddra_embeddings = pickle.load(pkl)
 
-        # for the shiny app, only allow loading the embedding files locally.
-    # except FileNotFoundError:
-    #     return f'Failed loading the embedding file from: data/embed/{level.upper()}_embeddings_{subset}' + model_name.replace(
-    #         '/', '-') + '.pkl'
-
-    ########### OPTIONAL - VECTORIZE ALL MEDDRA TERMS FOR ALL LEVELS 
-    # ---------------------------------------------------------------------------------------
     return meddra_embeddings
 
 
 ###################
-def load_meddra_df(kind='Synonym'):
+def load_meddra_df(kind='import'):
     # kind = either 'Synonym' or 'Import'
     if kind.lower() == 'import':
         df = pd.read_csv('data/meddra26.1-import.csv', sep=';', usecols=['SOCName', 'HLTGName', 'HLTName', 'PTName', 'LLTName'])
@@ -61,16 +53,3 @@ def create_new_embeddings(model_name, level):
     print(f'Finished calculating embeddings for MedDRA level {level.upper()}!')
 
 
-###################
-# small pipeline to create new embeddings for a given model & meddra dataset
-#
-# model_names = ['FremyCompany/BioLORD-2023-C']
-# meddra_levels = ['SOC', 'HLGT', 'HLT', 'PT', 'LLT']
-#
-#
-# for new_model_name in model_names:
-#     print(f'Started processing for {new_model_name}')
-#     for meddra_level in meddra_levels:
-#         create_new_embeddings(model_name=new_model_name, level=meddra_level)
-#
-# #
