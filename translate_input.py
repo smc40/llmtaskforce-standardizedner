@@ -21,7 +21,6 @@ def translate_description(input_text):
     input_text (str): the text to be translated
     return (str): user input translated to English, through DeepL API and automatic language detection
     """
-
     params = {
             'auth_key': os.getenv('DEEPL_API_KEY'),
             'text': input_text,

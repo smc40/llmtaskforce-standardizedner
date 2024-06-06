@@ -26,7 +26,7 @@ model = SentenceTransformer(model_name, device='cpu')
 meddra_embeddings = load_embeddings(model_name, level='LLT')
 
 # load meddra 
-meddra_df = pd.read_csv('data/meddra26.1-import.csv', sep=';')
+meddra_df = pd.read_csv('data/meddra26.1-import.csv', sep=';', dtype='str', usecols=['SOC','HLGT','HLT','PT','LLT'])
 
 
 # meddra dict incl synonyms (optional) 
@@ -52,7 +52,6 @@ def get_sim(text, n_terms=10, meddra_level='PT'):
 
     embed = model.encode(text)
     sim = util.cos_sim(embed, np.array(meddra_embeddings))[0].tolist()
-
  
     outdf = pd.DataFrame(list(zip(meddra_df['LLT'], meddra_df[meddra_level], sim)),
                          columns=['LLT', meddra_level, 'score']).sort_values(by='score', ascending=False)
