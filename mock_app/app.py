@@ -23,7 +23,7 @@ def message():
     data = request.get_json()
     logger.info(f'Received message: {data}')
     if data:
-        return jsonify({"response": f"Nice to meet you. You sent data {data}"})
+        return jsonify({"response": f"This ist to to test the api. You sent data {data}"})
     return jsonify({"error": "No message sent"}), 400
 
 @flask_app.route('/data', methods=['GET'])

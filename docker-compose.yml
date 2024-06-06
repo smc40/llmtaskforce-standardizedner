@@ -17,6 +17,6 @@ services:
   dict-match:
     image: bouldermaettel/standardizedner-app2:0.0.1
     ports:
-      - "8002:8002"
+      - "8003:8003"
     
     restart: always
