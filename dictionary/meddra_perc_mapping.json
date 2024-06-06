@@ -1,0 +1,36 @@
+{
+  "mappings": {
+    "properties": {
+      "text_input": {
+        "type": "text"
+      },
+      "query": {
+        "type": "percolator"
+      },
+      "soc_name": {
+        "type": "keyword"
+      },
+      "soc_code": {
+        "type": "keyword"
+      },
+      "hlgt_name": {
+        "type": "keyword"
+      },
+      "hlgt_code": {
+        "type": "keyword"
+      },
+      "hlt_name": {
+        "type": "keyword"
+      },
+      "hlt_code": {
+        "type": "keyword"
+      },
+      "pt_name": {
+        "type": "keyword"
+      },
+      "pt_code": {
+        "type": "keyword"
+      }
+    }
+  }
+            } 
