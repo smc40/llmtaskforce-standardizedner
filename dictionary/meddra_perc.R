@@ -145,5 +145,14 @@ gt <- ground_truth_perc %>%
            map("hits") %>%
            map_depth(2, "_source") %>%
            map_depth(2, "pt_name") %>%
+           map_chr(str_flatten, collapse = ", "),
+         meddra_llts = map(perc_resp, "hits") %>%
+           map("hits") %>%
+           map_depth(2, "_source") %>%
+           map_depth(2, "query") %>%
+           map_depth(2, "constant_score") %>%
+           map_depth(2, "filter") %>%
+           map_depth(2, "match_phrase") %>%
+           map_depth(2, "text_input") %>%
            map_chr(str_flatten, collapse = ", ")) %>%
   select(-perc_resp)
