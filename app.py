@@ -1,8 +1,8 @@
 from shiny import *
 from htmltools import HTML, div, Tag
 import pandas as pd
-#from translate_input import translate_description
-#from predict_meddra import get_sim
+from translate_input import translate_description
+from predict_meddra import get_sim
 # from load_meddra import load_embeddings
 # import shiny.module
 
@@ -16,13 +16,13 @@ translation_options = {"Yes": "Yes",
                        "No": "No"}
 
 app_ui = ui.page_fluid(
-    ui.panel_title("MedDRA AutoCoder"),
+    ui.panel_title("Standardized NER"),
     ui.navset_tab_card(
         ui.nav('Predict',
                ui.layout_sidebar(
                    ui.panel_sidebar( 
                        ui.input_select('meddra_level', 'MedDRA level', meddra_levels, selected='PT', multiple=False),
-                       ui.input_slider('n_terms', 'Number of predictions', min=1, max=10, value=5),
+                       ui.input_slider('n_terms', 'Number of predictions', min=1, max=5, value=1),
                        "\n",
                        ui.input_text_area('textinput', 'Description to analyse', rows=4),
                        ui.input_action_button(id="predict_term", label="Predict", class_='btn-success'),
@@ -56,7 +56,7 @@ app_ui = ui.page_fluid(
         ),
         selected='Predict',
     ),
-    title='MedDRA AutoCoder',
+    title='Standardized NER',
 )
 
 
@@ -66,7 +66,7 @@ app_ui = ui.page_fluid(
 def server(input, output, session):
 
     # Define reactive variables
-    val = reactive.Value(5)
+    val = reactive.Value(1)
 
 
     @reactive.Effect
@@ -77,7 +77,7 @@ def server(input, output, session):
     # Example data to display in the datagrid
     example_data = {"Found EDRs LLM": ["EDR1", "EDR2", "EDR3"],
                     "Found EDRs MedDra": ["EDR1", "EDR2", "EDR3"]}
-    
+
     
     # Render the data grid
     @output
@@ -89,13 +89,19 @@ def server(input, output, session):
     @render.table
     @reactive.event(input.predict_term)
     async def df_output():
-        data = {
-            'EDR': ['Alice', 'Bob', 'Charlie', 'David', 'Eva'],
-            'Score': [24, 27, 22, 32, 29],
-        }
-        results = pd.DataFrame(data)
-        # results = get_sim(input.textinput(),
-        #                     n_terms=val.get(), meddra_level=input.meddra_level(), output_mode=input.output_mode())
+        # data = {
+        #     'EDR': ['Alice', 'Bob', 'Charlie', 'David', 'Eva'],
+        #     'Score': [24, 27, 22, 32, 29],
+        # }
+        # results = pd.DataFrame(data)
+
+        LIST_OF_ENTITIES = ['Alice', 'Bob']
+        translations = [translate_description(x) for x in LIST_OF_ENTITIES]
+        print(translations)
+        results = [get_sim(x, n_terms=val.get(), meddra_level=input.meddra_level())
+                   for x in translations]
+        results = pd.concat(results)  # list of df's to df
+
         return results
 
 
@@ -117,6 +123,5 @@ app = App(app_ui, server, debug=True)
 #         log_level=None,
 #         app_dir='.', #app='mac',
 #         factory=False, launch_browser=True)
-
 
 
