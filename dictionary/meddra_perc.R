@@ -137,3 +137,13 @@ ground_truth_perc <- groundtruth %>%
 }', text),
                            perc_resp = map(body, ~Search(es, index = "meddra_perc_test2", body = .x))
 )
+
+
+ground_truth_perc$perc_resp$hits$hits
+gt <- ground_truth_perc %>% 
+  mutate(meddra_pts = map(perc_resp, "hits") %>% 
+           map("hits") %>%
+           map_depth(2, "_source") %>%
+           map_depth(2, "pt_name") %>%
+           map_chr(str_flatten, collapse = ", ")) %>%
+  select(-perc_resp)

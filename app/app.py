@@ -1,6 +1,6 @@
 import signal
 import asyncio
-from shiny import App, ui, render
+from shiny import App, ui, render, reactive
 import requests
 import pandas as pd
 import uvicorn
@@ -28,12 +28,14 @@ app_ui = ui.page_fluid(
     ui.input_text("data_title", "Enter Title"),
     ui.input_text("data_body", "Enter Body"),
     ui.input_action_button("send", "Send Data"),
-    ui.output_text_verbatim("response")
+    ui.output_text_verbatim("response"),
+    ui.output_text_verbatim("split_response")  # Add output for split data
 )
 
 def server(input, output, session):
     fetch_state = {'count': 0}
     send_state = {'count': 0}
+    fetched_data = reactive.Value(None)  # Use reactive value for fetched data
     
     @output
     @render.text
@@ -46,8 +48,9 @@ def server(input, output, session):
                 res = requests.get(api_url)
                 res.raise_for_status()
                 data = res.json()
+                fetched_data.set(data)  # Store fetched data reactively
                 logger.info(f'Data fetched successfully: {data}')
-                df = pd.DataFrame(data)
+                df = pd.DataFrame(data['data'])  # Assuming 'data' key contains the list
                 return df.to_string()
             except requests.exceptions.RequestException as e:
                 logger.error(f'Error fetching data: {e}')
@@ -70,6 +73,26 @@ def server(input, output, session):
             except requests.exceptions.RequestException as e:
                 logger.error(f'Error sending data: {e}')
                 return str(e)
+    
+    def split_letters(text):
+        return ' '.join(text)
+    
+    @output
+    @render.text
+    def split_response():
+        data = fetched_data.get()
+        if data:
+            try:
+                first_record = data['data'][0]  # Access the 'data' key to get the list of records
+                first_value = next(iter(first_record.values()))  # Get the first value
+                if isinstance(first_value, str):
+                    return split_letters(first_value)
+                else:
+                    return "First value is not a string"
+            except (KeyError, IndexError) as e:
+                return f"Error accessing data: {e}"
+        else:
+            return "No data fetched"
 
 app = App(app_ui, server)
 
