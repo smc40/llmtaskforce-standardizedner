@@ -8,4 +8,4 @@ data/results/input*.json
 __pycache__/
 *.pyc
 .venv
-venv
+.Rproj.user
