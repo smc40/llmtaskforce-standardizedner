@@ -118,7 +118,6 @@ llt_perc <- mdhier %>%
     llt_name))
 
 
-library(yyjsonr)
 
 writeLines(llt_perc$perc_doc, "llt_perc.json")
 
