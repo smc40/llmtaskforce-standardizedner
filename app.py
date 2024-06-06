@@ -3,6 +3,7 @@ from htmltools import HTML, div, Tag
 import pandas as pd
 from translate_input import translate_description
 from predict_meddra import get_sim
+from signal_detection_function import detect_signals
 # from load_meddra import load_embeddings
 # import shiny.module
 
@@ -74,8 +75,12 @@ def server(input, output, session):
     def _():
         val.set(input.n_terms())
 
-    # Example data to display in the datagrid
-    example_data = {"Found EDRs LLM": ["EDR1", "EDR2", "EDR3"],
+    prompting_results = detect_signals(input.textinput())
+
+    if not isinstance(prompting_results, list):
+        prompting_results = ["Not valid list"]
+
+    search_data = {"Found EDRs LLM": prompting_results,
                     "Found EDRs MedDra": ["EDR1", "EDR2", "EDR3"]}
 
     
@@ -83,7 +88,7 @@ def server(input, output, session):
     @output
     @render.table
     def temp_data():
-        return pd.DataFrame(example_data)
+        return pd.DataFrame(search_data)
 
     @output()
     @render.table
@@ -95,8 +100,7 @@ def server(input, output, session):
         # }
         # results = pd.DataFrame(data)
 
-        LIST_OF_ENTITIES = ['Alice', 'Bob']
-        translations = [translate_description(x) for x in LIST_OF_ENTITIES]
+        translations = [translate_description(x) for x in prompting_results]
         print(translations)
         results = [get_sim(x, n_terms=val.get(), meddra_level=input.meddra_level())
                    for x in translations]
