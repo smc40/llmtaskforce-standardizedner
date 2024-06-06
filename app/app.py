@@ -1,6 +1,6 @@
 import signal
 import asyncio
-from shiny import App, ui, render
+from shiny import App, ui, render, reactive
 import requests
 import pandas as pd
 import uvicorn
@@ -12,64 +12,70 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Fetch environment variables
-dictionary_match_url = os.getenv('DICTIONARY_MATCH_URL')
-dictionary_match_url_fetch = os.getenv('DICTIONARY_MATCH_URL_FETCH')
-azure_openai_api_key = os.getenv('AZURE_OPENAI_API_KEY')
-azure_openai_endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
+dictionary_match_url = os.getenv('DICTIONARY_MATCH_URL', 'http://dict-match:8002/message')
 
 logger.info(f'DICTIONARY_MATCH_URL: {dictionary_match_url}')
-logger.info(f'AZURE_OPENAI_API_KEY: {azure_openai_api_key}')
-logger.info(f'AZURE_OPENAI_ENDPOINT: {azure_openai_endpoint}')
 
 app_ui = ui.page_fluid(
     ui.input_text("api_url", "Enter API URL", value=dictionary_match_url), 
-    ui.input_text("fetch_url", "Enter Fetch URL", value=dictionary_match_url_fetch), 
-    ui.input_action_button("fetch", "Fetch Data"),
-    ui.input_text("data_title", "Enter Title"),
-    ui.input_text("data_body", "Enter Body"),
-    ui.input_action_button("send", "Send Data"),
-    ui.output_text_verbatim("response")
+    ui.input_text("sentence", "Enter Sentence to Split"), 
+    ui.input_action_button("split", "Split Sentence"),
+    ui.output_text_verbatim("response"),
+    ui.output_text_verbatim("processed_response")
 )
 
 def server(input, output, session):
-    fetch_state = {'count': 0}
-    send_state = {'count': 0}
-    
+    split_state = {'count': 0}
+    split_data = reactive.Value("")
+
+    @reactive.event(input.split)
+    def handle_button_click():
+        split_state['count'] += 1
+        api_url = input.api_url()
+        sentence = input.sentence()
+        logger.info(f'Split button clicked. API URL: {api_url}, Sentence: {sentence}')
+        try:
+            logger.info(f'Making API request to {api_url} with sentence: {sentence}')
+            res = requests.get(api_url, params={'sentence': sentence})
+            logger.info(f'API response status: {res.status_code}')
+            res.raise_for_status()
+            data = res.json()
+            logger.info(f'Data fetched successfully: {data}')
+            split_data.set(data)
+        except requests.exceptions.RequestException as e:
+            logger.error(f'Error fetching data: {e}')
+            split_data.set({'error': str(e)})
+        except ValueError as e:
+            logger.error(f'Error parsing JSON response: {e}')
+            split_data.set({'error': 'Error parsing JSON response'})
+        except Exception as e:
+            logger.error(f'Unexpected error: {e}')
+            split_data.set({'error': 'Unexpected error occurred'})
+
     @output
     @render.text
     def response():
-        if input.fetch() > fetch_state['count']:
-            fetch_state['count'] = input.fetch()
-            api_url = input.fetch_url()
-            logger.info(f'Fetch button clicked. API URL: {api_url}')
-            try:
-                res = requests.get(api_url)
-                res.raise_for_status()
-                data = res.json()
-                logger.info(f'Data fetched successfully: {data}')
-                df = pd.DataFrame(data)
-                return df.to_string()
-            except requests.exceptions.RequestException as e:
-                logger.error(f'Error fetching data: {e}')
-                return str(e)
-        
-        if input.send() > send_state['count']:
-            send_state['count'] = input.send()
-            api_url = input.api_url()
-            data = {
-                "title": input.data_title(),
-                "body": input.data_body(),
-                "userId": 1  # JSONPlaceholder API requires a userId for POST requests
-            }
-            logger.info(f'Send button clicked. API URL: {api_url}, Data: {data}')
-            try:
-                res = requests.post(api_url, json=data)
-                res.raise_for_status()
-                logger.info(f'Data sent successfully: {res.json()}')
-                return res.json()
-            except requests.exceptions.RequestException as e:
-                logger.error(f'Error sending data: {e}')
-                return str(e)
+        data = split_data.get()
+        if isinstance(data, dict) and 'error' in data:
+            return f"Error: {data['error']}"
+        logger.info(f'Raw response data: {data}')
+        return str(data)
+    
+    @output
+    @render.text
+    def processed_response():
+        data = split_data.get()
+        if isinstance(data, dict) and 'sentence' in data:
+            sentence = data['sentence']
+            if isinstance(sentence, str):
+                processed = ', '.join(sentence)
+                logger.info(f'Processed data: {processed}')
+                return processed
+            else:
+                logger.error(f'Unexpected data format for sentence: {sentence}')
+                return "Unexpected data format for sentence"
+        logger.error('No data to process or error occurred')
+        return "No data to process or error occurred"
 
 app = App(app_ui, server)
 
@@ -77,7 +83,8 @@ def main():
     config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
     server = uvicorn.Server(config)
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     loop.add_signal_handler(signal.SIGTERM, lambda: asyncio.create_task(server.shutdown()))
     loop.add_signal_handler(signal.SIGINT, lambda: asyncio.create_task(server.shutdown()))
 

@@ -18,5 +18,5 @@ EXPOSE 8000
 CMD ["python", "app.py"]
 
 
-# IMAGE_TAG=0.0.1; docker build -t bouldermaettel/standardizedner-app:$IMAGE_TAG . ; docker push bouldermaettel/standardizedner-app:$IMAGE_TAG; 
+# IMAGE_TAG=0.0.2; docker build -t bouldermaettel/standardizedner-app:$IMAGE_TAG . ; docker push bouldermaettel/standardizedner-app:$IMAGE_TAG; 
 # docker run -p 8000:8000 bouldermaettel/standardizedner-app:0.0.1

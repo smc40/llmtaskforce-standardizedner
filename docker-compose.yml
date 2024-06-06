@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: bouldermaettel/standardizedner-app:0.0.1
+    image: bouldermaettel/standardizedner-app:0.0.2
     # build:
     #   context: .
     #   dockerfile: Dockerfile
@@ -15,8 +15,7 @@ services:
     volumes:
       - ./app/app.py:/app/app.py
   dict-match:
-    image: bouldermaettel/standardizedner-app2:0.0.1
+    image: bouldermaettel/standardizedner-app3:0.0.1
     ports:
       - "8002:8002"
-    
     restart: always
