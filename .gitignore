@@ -4,7 +4,9 @@ data/results/*csv
 data/results/*groundtruth.json
 data/results/input*.json
 **/*performance_VAL*.tsv
+app/.env
 
 __pycache__/
 *.pyc
 .venv
+.env

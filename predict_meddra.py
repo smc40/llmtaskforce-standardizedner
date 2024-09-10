@@ -4,35 +4,23 @@ import json
 import re
 import html
 from sentence_transformers import SentenceTransformer, util
-from load_meddra import load_embeddings
+from load_meddra import load_meddra_df, load_embeddings
 
 ################
-# optional - download model and save it locally
-################
-# model_name = 'FremyCompany/BioLORD-2023-C'
-# model = SentenceTransformer(model_name, device='cpu')
-# model.save('data/FremyCompany-BioLORD-2023-C')
-
-################
-# load prediction model from local copy
+# load prediction model, from HF/cache or from local folder
 ################
 model_name = 'FremyCompany/BioLORD-2023-C'
-model_path = 'data/FremyCompany-BioLORD-2023-C'
-# model = SentenceTransformer(model_path, device='cpu')
 model = SentenceTransformer(model_name, device='cpu')
+# model.save('data/FremyCompany-BioLORD-2023-C')
+# model_path = 'data/FremyCompany-BioLORD-2023-C'
+# model = SentenceTransformer(model_path, device='cpu')
 
-
-# load embeddings and meddra dict from .pkl/.json file
+# load precalculated embeddings from .pkl file
 meddra_embeddings = load_embeddings(model_name, level='LLT')
 
-# load meddra 
-meddra_df = pd.read_csv('data/meddra26.1-import.csv', sep=';', dtype='str', usecols=['SOC','HLGT','HLT','PT','LLT'])
-
-
-# meddra dict incl synonyms (optional) 
-# with open('data/meddra_dict.json', 'r') as f:
-#     meddra_dict = json.load(f)
-
+# load meddra
+# meddra_df = pd.read_csv('data/meddra27.0-import.csv', sep=';', dtype='str', usecols=['SOC','HLGT','HLT','PT','LLT'])
+meddra_df = load_meddra_df(version='27.0')
 
 
 def get_sim(text, n_terms=10, meddra_level='PT'):
@@ -40,14 +28,10 @@ def get_sim(text, n_terms=10, meddra_level='PT'):
     Get semantic similarity score at LLT level;
     Predict and return top n matches at requested MedDRA level
 
-    text (str): the input text that will be compared to a list of MedDRA terms
+    text (str): the input text that will be compared to a list of MedDRA terms. After optional translation
     n_terms (int): the number of predictions to return
     meddra_level (str): the requested MedDRA hierarchy level, one of ['SOC', 'HLGT', 'HLT', 'PT', 'LLT']
-    output mode (str): one of ['df', 'plot']
-    meddra_dict (dict): temporary solution to index the meddra terms hierarchically at LLT level --> replace with df
-    meddra_embeddings (list): list of numpy arrays containing the LLT embeddings
-
-    output is returned to the main panel in app.py - one of ['text', 'df', 'plot']
+    output is returned to the main panel in app.py as a df/table
     """
 
     embed = model.encode(text)
